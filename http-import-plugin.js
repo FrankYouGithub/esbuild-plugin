@@ -1,7 +1,7 @@
 /*
  * @Author       : frank
  * @Date         : 2022-04-20 09:21:21
- * @LastEditTime : 2022-04-20 10:37:22
+ * @LastEditTime : 2022-04-21 22:25:51
  * @LastEditors  : frank
  * @Description  : In User Settings Edit
  */
@@ -14,17 +14,21 @@ module.exports = () => ({
     // 1. 拦截 CDN 请求
     // 拦截间接依赖的路径，并重写路径
     // tip: 间接依赖同样会被自动带上 `http-url`的 namespace
-    build.onResolve({ filter: /.*/, namespace: "http-url" }, (args) => ({
-      // 重写路径
-      path: new URL(args.path, args.importer).toString(),
-      namespace: "http-url",
-    }));
+    build.onResolve({ filter: /.*/, namespace: "http-url" }, (args) => {
+      console.log('onResolve:------->', args)
+      return {
+        // 重写路径
+        path: new URL(args.path, args.importer).toString(),
+        namespace: "http-url",
+      }
+    });
 
     // 2. 通过 fetch 请求加载 CDN 资源
     build.onLoad({ filter: /.*/, namespace: "http-url" }, async (args) => {
+      console.log('onLoad:======>', args)
       let contents = await new Promise((resolve, reject) => {
         function fetch(url) {
-          console.log(`Downloading: ${url}`);
+          console.log(`Downloading: ----> ${url}`);
           let lib = url.startsWith("https") ? https : http;
           let req = lib
             .get(url, (res) => {
@@ -47,6 +51,7 @@ module.exports = () => ({
         }
         fetch(args.path);
       });
+      console.log(contents)
       return { contents };
     });
   },
